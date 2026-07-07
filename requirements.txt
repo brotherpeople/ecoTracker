@@ -1,0 +1,5 @@
+psutil>=5.9.0
+Pillow>=10.0.0
+pystray>=0.19.4
+GPUtil>=0.9.0
+wmi>=1.5.1; sys_platform == 'win32'
