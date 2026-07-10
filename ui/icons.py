@@ -29,7 +29,7 @@ FONT_NAME = "Material Icons"
 
 # Change the hex value inside chr() to swap an icon.
 ICON_BOLT   = chr(0xEA0B)  # bolt
-ICON_EURO   = chr(0xE926)  # user-selected
+ICON_EURO   = chr(0xF041)  # user-selected
 ICON_WATER  = chr(0xE91C)  # user-selected
 ICON_DELETE = chr(0xE872)  # delete
 ICON_WIFI   = chr(0xE63E)  # wifi
