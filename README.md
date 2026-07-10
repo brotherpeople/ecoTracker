@@ -97,11 +97,13 @@ EcoTracker calculates your environmental footprint using the following structure
 
 Double-click the installer script corresponding to your operating system. The installer will automatically copy files to standard folders, create a desktop shortcut, and register EcoTracker to start automatically on login.
 
-| Operating System | Installer File | Execution Instruction |
-| :--- | :--- | :--- |
-| **Windows** | `install.bat` | Double-click to run. Requires python/pip. |
-| **macOS** | `install.command` | Double-click in Finder to run. |
-| **Linux** | `install.sh` | Run `bash install.sh` in terminal. |
+To uninstall, run the corresponding uninstaller script, which will cleanly remove all directories, shortcuts, and startup tasks.
+
+| Operating System | Installer File | Uninstaller File | Execution Instruction |
+| :--- | :--- | :--- | :--- |
+| **Windows** | `install.bat` | `uninstall.bat` | Double-click to run. (Requires python/pip for install) |
+| **macOS** | `install.command` | `uninstall.command` | Double-click in Finder to run. |
+| **Linux** | `install.sh` | `uninstall.sh` | Run in terminal. |
 
 ---
 
