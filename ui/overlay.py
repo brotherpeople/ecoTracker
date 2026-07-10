@@ -50,8 +50,8 @@ def _fmt_delta_kwh(delta: float) -> str:
 def _fmt_delta_cost(delta: float, currency: str = "EUR") -> str:
     if delta <= 0:
         return ""
-    symbol = config.CURRENCY_SYMBOLS.get(currency, "€")
-    if currency == "KRW":
+    symbol = config.CURRENCY_SYMBOLS.get(currency, currency)
+    if currency in ("KRW", "JPY", "VND", "INR", "SEK", "NOK", "DKK", "ZAR"):
         if delta < 0.1:
             return f"(+{symbol}{delta:.3f})"
         if delta < 1.0:

@@ -27,6 +27,22 @@ CURRENCY_SYMBOLS: dict[str, str] = {
     "EUR": "€",
     "USD": "$",
     "KRW": "₩",
+    "GBP": "£",
+    "JPY": "¥",
+    "CNY": "¥",
+    "CAD": "$",
+    "AUD": "$",
+    "CHF": "CHF",
+    "SEK": "kr",
+    "NOK": "kr",
+    "DKK": "kr",
+    "NZD": "$",
+    "SGD": "$",
+    "BRL": "R$",
+    "INR": "₹",
+    "VND": "₫",
+    "MXN": "$",
+    "ZAR": "R",
 }
 # Default rate fallback
 ELECTRICITY_RATE_EUR: float = 0.28  # EUR / kWh

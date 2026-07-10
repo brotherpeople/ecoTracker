@@ -19,9 +19,19 @@ from __future__ import annotations
 
 import re
 import time
+import json
+from pathlib import Path
 import psutil
 
 import config
+
+# Load global utility rates database
+_RATES_FILE = Path(__file__).parent / "rates.json"
+try:
+    with open(_RATES_FILE, "r", encoding="utf-8") as _f:
+        RATES_DB = json.load(_f)
+except Exception:
+    RATES_DB = {}
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -127,7 +137,13 @@ class Engine:
         self._kwh: float = 0.0
         self._last_tick: float = time.monotonic()
         self._boot_ts: float = psutil.boot_time()
-        self._currency: str = "EUR"  # default currency
+        
+        # Currency settings
+        self._currency: str = "EUR"  # active currency
+        self._use_auto: bool = True  # whether to follow detected currency
+        self._detected_currency: str | None = None
+        self._detected_rate: float | None = None
+        self._detected_symbol: str | None = None
 
         # GPU
         self._gputil = _try_import_gputil()
@@ -239,8 +255,35 @@ class Engine:
 
     @currency.setter
     def currency(self, val: str) -> None:
-        if val in config.CURRENCY_RATES:
-            self._currency = val
+        self._currency = val
+
+    @property
+    def use_auto(self) -> bool:
+        return self._use_auto
+
+    @use_auto.setter
+    def use_auto(self, val: bool) -> None:
+        self._use_auto = val
+
+    @property
+    def detected_currency(self) -> str | None:
+        return self._detected_currency
+
+    def apply_detected_location(self, country_code: str, currency_code: str) -> None:
+        """Called when Geo-IP detector returns country & currency code."""
+        country_data = RATES_DB.get(country_code)
+        if country_data:
+            self._detected_currency = country_data.get("currency", currency_code)
+            self._detected_rate = country_data.get("rate", 0.16)
+            self._detected_symbol = country_data.get("symbol", "$")
+        else:
+            self._detected_currency = currency_code
+            self._detected_rate = config.CURRENCY_RATES.get(currency_code, 0.16)
+            self._detected_symbol = config.CURRENCY_SYMBOLS.get(currency_code, "$")
+
+        # If in auto mode, update active currency immediately
+        if self._use_auto:
+            self._currency = self._detected_currency
 
     def metrics(self) -> dict:
         net_gb  = _net_bytes_total() / (1024 ** 3)
@@ -249,7 +292,18 @@ class Engine:
         total_kwh = hw_kwh + net_kwh
         uptime_h  = self.uptime_hours
 
-        rate = config.CURRENCY_RATES.get(self._currency, 0.28)
+        # Determine rate dynamically
+        if self._currency == self._detected_currency and self._detected_rate is not None:
+            rate = self._detected_rate
+        else:
+            rate = None
+            for country_info in RATES_DB.values():
+                if country_info.get("currency") == self._currency:
+                    rate = country_info.get("rate")
+                    break
+            if rate is None:
+                rate = config.CURRENCY_RATES.get(self._currency, 0.28)
+
         cost = total_kwh * rate
 
         return {
@@ -272,8 +326,9 @@ def fmt_kwh(kwh: float) -> str:
     return f"{kwh:.4f} kWh"
 
 def fmt_cost(amount: float, currency: str = "EUR") -> str:
-    symbol = config.CURRENCY_SYMBOLS.get(currency, "€")
-    if currency == "KRW":
+    symbol = config.CURRENCY_SYMBOLS.get(currency, currency)
+    # Check if currency is zero-decimal or large-unit
+    if currency in ("KRW", "JPY", "VND", "INR", "SEK", "NOK", "DKK", "ZAR"):
         if amount < 1.0:
             return f"{symbol}{amount:.2f}"
         if amount < 10.0:

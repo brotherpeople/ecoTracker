@@ -13,6 +13,7 @@ import threading
 import tkinter as tk
 
 from tracker.engine import Engine
+from tracker.geo import GeoDetector
 from ui.overlay import Overlay
 from ui.tray import TrayIcon
 
@@ -38,6 +39,21 @@ def main() -> None:
     def change_currency(curr: str) -> None:
         engine.currency = curr
 
+    def toggle_auto_currency(use_auto: bool) -> None:
+        engine.use_auto = use_auto
+        if use_auto and engine.detected_currency:
+            engine.currency = engine.detected_currency
+            tray.set_currency(engine.detected_currency, True)
+
+    def on_geo_detected(country_code: str, currency_code: str) -> None:
+        def _apply():
+            engine.apply_detected_location(country_code, currency_code)
+            if engine.detected_currency:
+                tray.set_detected_currency(engine.detected_currency)
+                if engine.use_auto:
+                    tray.set_currency(engine.detected_currency, True)
+        root.after(0, _apply)
+
     # ── 4. System-tray icon (runs in its own daemon thread) ───────────────────
     tray = TrayIcon(
         on_quit=root.destroy,
@@ -47,11 +63,17 @@ def main() -> None:
         initial_visible=True,
         on_change_currency=change_currency,
         initial_currency="EUR",
+        on_toggle_auto_currency=toggle_auto_currency,
+        initial_use_auto=True,
     )
     tray_thread = threading.Thread(target=tray.run, daemon=True, name="tray")
     tray_thread.start()
 
-    # ── 5. tkinter event loop ─────────────────────────────────────────────────
+    # ── 5. Run Geo-IP location background detector ───────────────────────────
+    detector = GeoDetector(callback=on_geo_detected)
+    detector.start()
+
+    # ── 6. tkinter event loop ─────────────────────────────────────────────────
     try:
         root.mainloop()
     finally:

@@ -56,11 +56,12 @@ class TrayIcon:
     ----------
     on_quit  : callable        – called on the main thread via root.after.
     root     : tk.Tk           – needed to schedule callbacks safely.
-    on_pin   : callable(str|None) – called with corner code or None.
     on_toggle_visibility : callable(bool) – called with visibility state.
     initial_visible : bool     – initial visibility state of the overlay.
     on_change_currency : callable(str)   – called with selected currency code.
     initial_currency : str     – initial currency code (EUR, USD, KRW).
+    on_toggle_auto_currency : callable(bool) – called when toggling auto-detection mode.
+    initial_use_auto : bool     – initial state of auto-detection mode.
     """
 
     def __init__(
@@ -72,6 +73,8 @@ class TrayIcon:
         initial_visible: bool = True,
         on_change_currency: Callable[[str], None] | None = None,
         initial_currency: str = "EUR",
+        on_toggle_auto_currency: Callable[[bool], None] | None = None,
+        initial_use_auto: bool = True,
     ) -> None:
         self._root   = root
         self._on_pin = on_pin
@@ -79,6 +82,9 @@ class TrayIcon:
         self._visible = initial_visible
         self._on_change_currency = on_change_currency
         self._currency = initial_currency
+        self._on_toggle_auto_currency = on_toggle_auto_currency
+        self._use_auto = initial_use_auto
+        self._detected_currency: str | None = None
 
         # Pin submenu
         def _pin(corner):
@@ -92,10 +98,18 @@ class TrayIcon:
             if self._on_toggle_visibility:
                 self._root.after(0, lambda: self._on_toggle_visibility(self._visible))
 
-        # Currency submenu
+        # Currency actions
+        def _set_auto(icon, item):
+            self._use_auto = True
+            if self._on_toggle_auto_currency:
+                self._root.after(0, lambda: self._on_toggle_auto_currency(True))
+
         def _set_currency(curr):
             def _cb(icon, item):
                 self._currency = curr
+                self._use_auto = False
+                if self._on_toggle_auto_currency:
+                    self._root.after(0, lambda: self._on_toggle_auto_currency(False))
                 if self._on_change_currency:
                     self._root.after(0, lambda: self._on_change_currency(curr))
             return _cb
@@ -110,9 +124,15 @@ class TrayIcon:
         )
 
         currency_submenu = pystray.Menu(
-            pystray.MenuItem("₩ KRW (원)",  _set_currency("KRW"), checked=lambda item: self._currency == "KRW", radio=True),
-            pystray.MenuItem("$ USD (달러)", _set_currency("USD"), checked=lambda item: self._currency == "USD", radio=True),
-            pystray.MenuItem("€ EUR (유로)", _set_currency("EUR"), checked=lambda item: self._currency == "EUR", radio=True),
+            pystray.MenuItem(
+                lambda item: f"Auto: {self._detected_currency}" if self._detected_currency else "Auto (Detecting...)",
+                _set_auto,
+                checked=lambda item: self._use_auto
+            ),
+            pystray.Menu.SEPARATOR,
+            pystray.MenuItem("₩ KRW (원)",  _set_currency("KRW"), checked=lambda item: not self._use_auto and self._currency == "KRW", radio=True),
+            pystray.MenuItem("$ USD (달러)", _set_currency("USD"), checked=lambda item: not self._use_auto and self._currency == "USD", radio=True),
+            pystray.MenuItem("€ EUR (유로)", _set_currency("EUR"), checked=lambda item: not self._use_auto and self._currency == "EUR", radio=True),
         )
 
         menu = pystray.Menu(
@@ -143,6 +163,13 @@ class TrayIcon:
 
     def stop(self) -> None:
         self._icon.stop()
+
+    def set_detected_currency(self, curr: str) -> None:
+        self._detected_currency = curr
+
+    def set_currency(self, curr: str, use_auto: bool) -> None:
+        self._currency = curr
+        self._use_auto = use_auto
 
     def _quit(self, icon, item) -> None:
         icon.stop()
