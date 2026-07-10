@@ -42,52 +42,72 @@ EcoTracker is a lightweight cross-platform desktop widget that monitors your PC'
 EcoTracker calculates your environmental footprint using the following structured formulas:
 
 ### 1. Energy Consumption ($E_{\text{total}}$)
-\[E_{\text{total}} = E_{\text{hardware}} + E_{\text{network}}\]
+$$
+E_{\text{total}} = E_{\text{hardware}} + E_{\text{network}}
+$$
 
 * **Hardware Power ($P_{\text{hw}}$)**:
-  \[P_{\text{hw}} = P_{\text{cpu}} + P_{\text{gpu}} + P_{\text{ram}}\]
+  $$
+  P_{\text{hw}} = P_{\text{cpu}} + P_{\text{gpu}} + P_{\text{ram}}
+  $$
   - **CPU Power ($P_{\text{cpu}}$)**:
-    \[P_{\text{cpu}} = P_{\text{cpu\_idle}} + \left(\frac{U_{\text{cpu}}}{100}\right) \times (TDP - P_{\text{cpu\_idle}})\]
-    - $P_{\text{cpu\_idle}}$: CPU idle baseline power consumption (fixed at $8.0\text{ W}$).
+    $$
+    P_{\text{cpu}} = P_{\text{idle}} + \left(\frac{U_{\text{cpu}}}{100}\right) \times (TDP - P_{\text{idle}})
+    $$
+    - $P_{\text{idle}}$: CPU idle baseline power consumption (fixed at $8.0\text{ W}$).
     - $U_{\text{cpu}}$: Current CPU load percentage ($0\% - 100\%$).
     - $TDP$: Thermal Design Power (auto-detected via WMI on Windows or defaults to $45.0\text{ W}$).
   - **GPU Power ($P_{\text{gpu}}$)**: GPU idle power ($5.0\text{ W}$) + load-scaled TDP (sampled via `GPUtil` if a discrete GPU is present).
   - **RAM Power ($P_{\text{ram}}$)**: Fixed RAM power estimate ($3.0\text{ W}$).
 * **Network Infrastructure Energy ($E_{\text{network}}$)**:
-  \[E_{\text{network}} = D_{\text{net}} \times 0.06 \text{ kWh/GB}\]
+  $$
+  E_{\text{network}} = D_{\text{net}} \times 0.06 \text{ kWh/GB}
+  $$
   - $D_{\text{net}}$: Cumulative network data traffic in GB.
   - $0.06\text{ kWh/GB}$: Indirect energy consumption coefficient of routing infrastructure (Source: IEA / Shift Project).
 
 ---
 
 ### 2. Electricity Cost ($\text{Cost}$)
-\[\text{Cost} = E_{\text{total}} \times \text{Rate}_{\text{local}}\]
+$$
+\text{Cost} = E_{\text{total}} \times \text{Rate}_{\text{local}}
+$$
 
-* $\text{Rate}_{\text{local}}$: Electricity rate per kWh loaded dynamically from `tracker/rates.json` based on IP location or manual selection (e.g. $150.0\text{ ₩/kWh}$ for South Korea, $0.17\text{ \$/kWh}$ for United States, $0.38\text{ €/kWh}$ for Germany).
+* $\text{Rate}_{\text{local}}$: Electricity rate per kWh loaded dynamically from `tracker/rates.json` based on IP location or manual selection (e.g. $150.0$ KRW/kWh for South Korea, \$0.17/kWh for United States, $0.38$ EUR/kWh for Germany).
 
 ---
 
 ### 3. Water Footprint ($W$)
-\[W = E_{\text{total}} \times 1.8 \text{ L/kWh}\]
+$$
+W = E_{\text{total}} \times 1.8 \text{ L/kWh}
+$$
 
 * $1.8\text{ L/kWh}$: Virtual water evaporated per kWh generated due to thermal power-plant cooling requirements (Source: Global thermal plant cooling averages).
 
 ---
 
 ### 4. Solid Waste & E-Waste ($M_{\text{waste}}$)
-\[M_{\text{waste}} = M_{\text{power}} + M_{\text{e-waste}}\]
+$$
+M_{\text{waste}} = M_{\text{power}} + M_{\text{e-waste}}
+$$
 
 * **Power Generation Solid Waste ($M_{\text{power}}$)**:
-  \[M_{\text{power}} = E_{\text{total}} \times 35.0 \text{ g/kWh}\]
+  $$
+  M_{\text{power}} = E_{\text{total}} \times 35.0 \text{ g/kWh}
+  $$
   - $35.0\text{ g/kWh}$: Solid waste (fly ash, slag) produced per kWh generated (Source: European grid mix average).
 * **Device E-Waste Amortization ($M_{\text{e-waste}}$)**:
-  \[M_{\text{e-waste}} = \text{Uptime (hours)} \times 0.17 \text{ g/h}\]
+  $$
+  M_{\text{e-waste}} = \text{Uptime (hours)} \times 0.17 \text{ g/h}
+  $$
   - $0.17\text{ g/h}$: Amortization rate based on a standard $2.0\text{ kg}$ laptop over a 4-year lifecycle, assuming 8 hours of usage per day.
 
 ---
 
 ### 5. Network Data Traffic ($D_{\text{net}}$)
-\[D_{\text{net}} = \frac{\text{Bytes}_{\text{sent}} + \text{Bytes}_{\text{received}}}{1024^3}\]
+$$
+D_{\text{net}} = \frac{\text{Bytes}_{\text{sent}} + \text{Bytes}_{\text{received}}}{1024^3}
+$$
 
 * $\text{Bytes}_{\text{sent}} / \text{Bytes}_{\text{received}}$: Cumulative network data traffic since the application started, polled using `psutil.net_io_counters()`.
 
