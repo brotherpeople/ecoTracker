@@ -47,16 +47,16 @@ $$
 E_{\text{total}} = E_{\text{hardware}} + E_{\text{network}}
 $$
 
-* **하드웨어 전력 ($P_{\text{hw}}$)**: $P_{\text{hw}} = P_{\text{cpu}} + P_{\text{gpu}} + P_{\text{ram}}$
-  - **CPU 소비 전력 ($P_{\text{cpu}}$)**: $P_{\text{cpu}} = P_{\text{idle}} + \left(\frac{U_{\text{cpu}}}{100}\right) \times (TDP - P_{\text{idle}})$
-    - $P_{\text{idle}}$: CPU 기본 대기 전력 (8.0W 고정).
-    - $U_{\text{cpu}}$: 실시간 CPU 사용량 ($0\% - 100\%$).
-    - $TDP$: 열설계전력 (Windows WMI API를 통해 모델별로 자동 감지하거나 45W 기본값으로 설정).
-  - **GPU 소비 전력 ($P_{\text{gpu}}$)**: GPU 기본 대기 전력 (5W) + 로드율 기반 TDP 스케일링 (외장 GPU 탑재 시 GPUtil로 실시간 샘플링).
-  - **RAM 소비 전력 ($P_{\text{ram}}$)**: DDR4/DDR5 메모리 평균 전력 (3.0W 고정).
-* **네트워크 인프라 에너지 ($E_{\text{network}}$)**: $E_{\text{network}} = D_{\text{net}} \times 0.06 \text{ kWh/GB}$
-  - $D_{\text{net}}$: 누적 네트워크 데이터 사용량 (GB).
-  - $0.06\text{ kWh/GB}$: 통신망 라우터 및 데이터 센터 전송 전력 계수 (출처: 국제에너지기구(IEA) / Shift Project).
+* **하드웨어 전력** (`P_hw`): `P_hw = P_cpu + P_gpu + P_ram`
+  - **CPU 소비 전력** (`P_cpu`): `P_cpu = P_idle + (U_cpu / 100) * (TDP - P_idle)`
+    - `P_idle`: CPU 기본 대기 전력 (8.0W 고정).
+    - `U_cpu`: 실시간 CPU 사용량 (0% - 100%).
+    - `TDP`: 열설계전력 (Windows WMI API를 통해 모델별로 자동 감지하거나 45.0W 기본값으로 설정).
+  - **GPU 소비 전력** (`P_gpu`): GPU 기본 대기 전력 (5.0W) + 로드율 기반 TDP 스케일링 (외장 GPU 탑재 시 GPUtil로 실시간 샘플링).
+  - **RAM 소비 전력** (`P_ram`): DDR4/DDR5 메모리 평균 전력 (3.0W 고정).
+* **네트워크 인프라 에너지** (`E_network`): `E_network = D_net * 0.06 kWh/GB`
+  - `D_net`: 누적 네트워크 데이터 사용량 (GB).
+  - `0.06 kWh/GB`: 통신망 라우터 및 데이터 센터 전송 전력 계수 (출처: 국제에너지기구(IEA) / Shift Project).
 
 ---
 
@@ -65,7 +65,7 @@ $$
 \text{Cost} = E_{\text{total}} \times \text{Rate}_{\text{local}}
 $$
 
-* $\text{Rate}_{\text{local}}$: kWh당 전력 요율. IP 위치 감지로 파악된 국가 정보 또는 수동 선택한 통화에 맞추어 `tracker/rates.json`에서 자동 로딩 (예: 한국 150.0 원/kWh, 미국 \$0.17/kWh, 독일 0.38 유로/kWh).
+* `Rate_local`: kWh당 전력 요율. IP 위치 감지로 파악된 국가 정보 또는 수동 선택한 통화에 맞추어 `tracker/rates.json`에서 자동 로딩 (예: 한국 150.0 원/kWh, 미국 \$0.17/kWh, 독일 0.38 유로/kWh).
 
 ---
 
@@ -74,7 +74,7 @@ $$
 W = E_{\text{total}} \times 1.8 \text{ L/kWh}
 $$
 
-* $1.8\text{ L/kWh}$: 발전소(화력/가스/원자력)의 열 냉각을 위해 소모/증발되는 냉각수 계수 (출처: 전 세계 발전 냉각수 평균 소모량).
+* `1.8 L/kWh`: 발전소(화력/가스/원자력)의 열 냉각을 위해 소모/증발되는 냉각수 계수 (출처: 전 세계 발전 냉각수 평균 소모량).
 
 ---
 
@@ -83,10 +83,11 @@ $$
 M_{\text{waste}} = M_{\text{power}} + M_{\text{e-waste}}
 $$
 
-* **발전 고형 폐기물 ($M_{\text{power}}$)**: $M_{\text{power}} = E_{\text{total}} \times 35.0 \text{ g/kWh}$
-  - $35.0\text{ g/kWh}$: 전력 생산 중 발생하는 석탄재, 슬래그 등 고형 폐기물 배출량 (출처: EU 전력 그리드 믹스 평균).
-* **디바이스 전자폐기물 감가상각 ($M_{\text{e-waste}}$)**: $M_{\text{e-waste}} = \text{Uptime (hours)} \times 0.17 \text{ g/h}$
-  - $0.17\text{ g/h}$: 2.0kg 랩톱의 4년 수명(하루 8시간 가동) 기준 시간당 감가상각 중량.
+* **발전 고형 폐기물** (`M_power`): `M_power = E_total * 35.0 g/kWh`
+  - `35.0 g/kWh`: 전력 생산 중 발생하는 석탄재, 슬래그 등 고형 폐기물 배출량 (출처: EU 전력 그리드 믹스 평균).
+* **디바이스 전자폐기물 감가상각** (`M_e-waste`): `M_e-waste = Uptime * 0.17 g/h`
+  - `Uptime`: 프로그램 가동 시간 (시간 단위).
+  - `0.17 g/h`: 2.0kg 랩톱의 4년 수명(하루 8시간 가동) 기준 시간당 감가상각 중량.
 
 ---
 
@@ -95,7 +96,7 @@ $$
 D_{\text{net}} = \frac{\text{Bytes}_{\text{sent}} + \text{Bytes}_{\text{received}}}{1024^3}
 $$
 
-* $\text{Bytes}_{\text{sent}} / \text{Bytes}_{\text{received}}$: 프로그램 시작 이후 송수신된 실제 누적 네트워크 바이트 (`psutil.net_io_counters()` API 기준).
+* **데이터 송수신량** (`Bytes_sent / Bytes_recv`): 프로그램 시작 이후 송수신된 실제 누적 네트워크 바이트 (`psutil.net_io_counters()` API 기준).
 
 ---
 
