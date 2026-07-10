@@ -46,23 +46,14 @@ $$
 E_{\text{total}} = E_{\text{hardware}} + E_{\text{network}}
 $$
 
-* **Hardware Power ($P_{\text{hw}}$)**:
-  $$
-  P_{\text{hw}} = P_{\text{cpu}} + P_{\text{gpu}} + P_{\text{ram}}
-  $$
-  - **CPU Power ($P_{\text{cpu}}$)**:
-    $$
-    P_{\text{cpu}} = P_{\text{idle}} + \left(\frac{U_{\text{cpu}}}{100}\right) \times (TDP - P_{\text{idle}})
-    $$
+* **Hardware Power ($P_{\text{hw}}$)**: $P_{\text{hw}} = P_{\text{cpu}} + P_{\text{gpu}} + P_{\text{ram}}$
+  - **CPU Power ($P_{\text{cpu}}$)**: $P_{\text{cpu}} = P_{\text{idle}} + \frac{U_{\text{cpu}}}{100} \times (TDP - P_{\text{idle}})$
     - $P_{\text{idle}}$: CPU idle baseline power consumption (fixed at $8.0\text{ W}$).
     - $U_{\text{cpu}}$: Current CPU load percentage ($0\% - 100\%$).
     - $TDP$: Thermal Design Power (auto-detected via WMI on Windows or defaults to $45.0\text{ W}$).
   - **GPU Power ($P_{\text{gpu}}$)**: GPU idle power ($5.0\text{ W}$) + load-scaled TDP (sampled via `GPUtil` if a discrete GPU is present).
   - **RAM Power ($P_{\text{ram}}$)**: Fixed RAM power estimate ($3.0\text{ W}$).
-* **Network Infrastructure Energy ($E_{\text{network}}$)**:
-  $$
-  E_{\text{network}} = D_{\text{net}} \times 0.06 \text{ kWh/GB}
-  $$
+* **Network Infrastructure Energy ($E_{\text{network}}$)**: $E_{\text{network}} = D_{\text{net}} \times 0.06 \text{ kWh/GB}$
   - $D_{\text{net}}$: Cumulative network data traffic in GB.
   - $0.06\text{ kWh/GB}$: Indirect energy consumption coefficient of routing infrastructure (Source: IEA / Shift Project).
 
@@ -91,15 +82,9 @@ $$
 M_{\text{waste}} = M_{\text{power}} + M_{\text{e-waste}}
 $$
 
-* **Power Generation Solid Waste ($M_{\text{power}}$)**:
-  $$
-  M_{\text{power}} = E_{\text{total}} \times 35.0 \text{ g/kWh}
-  $$
+* **Power Generation Solid Waste ($M_{\text{power}}$)**: $M_{\text{power}} = E_{\text{total}} \times 35.0 \text{ g/kWh}$
   - $35.0\text{ g/kWh}$: Solid waste (fly ash, slag) produced per kWh generated (Source: European grid mix average).
-* **Device E-Waste Amortization ($M_{\text{e-waste}}$)**:
-  $$
-  M_{\text{e-waste}} = \text{Uptime (hours)} \times 0.17 \text{ g/h}
-  $$
+* **Device E-Waste Amortization ($M_{\text{e-waste}}$)**: $M_{\text{e-waste}} = \text{Uptime (hours)} \times 0.17 \text{ g/h}$
   - $0.17\text{ g/h}$: Amortization rate based on a standard $2.0\text{ kg}$ laptop over a 4-year lifecycle, assuming 8 hours of usage per day.
 
 ---
