@@ -121,3 +121,9 @@ Thumbs.db
 .vscode/
 *.swp
 *.swo
+
+# EcoTracker-specific: packaged release archives (build output, not source)
+EcoTracker-*.zip
+
+# EcoTracker-specific: local reference papers/PDFs (not part of the source)
+/references/
