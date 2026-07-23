@@ -55,7 +55,14 @@ def ensure_font() -> str:
         try:
             res = ctypes.windll.gdi32.AddFontResourceW(str(_FONT_FILE))
             if res > 0:
-                ctypes.windll.user32.SendMessageW(0xFFFF, 0x001D, 0, 0)
+                # Deliberately not broadcasting WM_FONTCHANGE via
+                # SendMessageW(HWND_BROADCAST, ...): that call is synchronous
+                # and waits on every top-level window on the system, so it
+                # can hang indefinitely if any window isn't responding. It's
+                # also unnecessary here — AddFontResourceW already makes the
+                # font usable by this process immediately; the broadcast
+                # only exists to notify *other* running applications, which
+                # this app doesn't need.
                 _state["font"] = FONT_NAME
                 _state["loaded"] = True
                 return FONT_NAME

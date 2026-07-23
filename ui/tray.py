@@ -28,6 +28,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "auto_detecting": "Auto (Detecting...)",
         "auto_detected": "Auto: {}",
         "language": "Language",
+        "accuracy": "Accuracy...",
         "quit": "Quit",
         "tooltip": "EcoTracker – running",
     },
@@ -43,6 +44,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "auto_detecting": "자동 감지 중...",
         "auto_detected": "자동 감지: {}",
         "language": "언어 설정",
+        "accuracy": "정확도...",
         "quit": "종료",
         "tooltip": "EcoTracker – 실행 중",
     },
@@ -58,6 +60,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "auto_detecting": "Auto (Erkennung...)",
         "auto_detected": "Auto: {}",
         "language": "Sprache",
+        "accuracy": "Genauigkeit...",
         "quit": "Beenden",
         "tooltip": "EcoTracker – läuft",
     },
@@ -73,6 +76,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "auto_detecting": "Auto (Detectando...)",
         "auto_detected": "Auto: {}",
         "language": "Idioma",
+        "accuracy": "Precisión...",
         "quit": "Salir",
         "tooltip": "EcoTracker – ejecutándose",
     },
@@ -88,6 +92,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "auto_detecting": "Auto (Détection...)",
         "auto_detected": "Auto : {}",
         "language": "Langue",
+        "accuracy": "Précision...",
         "quit": "Quitter",
         "tooltip": "EcoTracker – en cours d'exécution",
     },
@@ -103,6 +108,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "auto_detecting": "自動検出中...",
         "auto_detected": "自動検出: {}",
         "language": "言語設定",
+        "accuracy": "精度...",
         "quit": "終了",
         "tooltip": "EcoTracker – 実行中",
     },
@@ -118,6 +124,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "auto_detecting": "自动检测中...",
         "auto_detected": "自动检测: {}",
         "language": "语言设置",
+        "accuracy": "准确度...",
         "quit": "退出",
         "tooltip": "EcoTracker – 正在运行",
     },
@@ -133,6 +140,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "auto_detecting": "Auto (Detectando...)",
         "auto_detected": "Auto: {}",
         "language": "Idioma",
+        "accuracy": "Precisão...",
         "quit": "Sair",
         "tooltip": "EcoTracker – executando",
     },
@@ -148,6 +156,7 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "auto_detecting": "Tự động phát hiện...",
         "auto_detected": "Tự động: {}",
         "language": "Ngôn ngữ",
+        "accuracy": "Độ chính xác...",
         "quit": "Thoát",
         "tooltip": "EcoTracker – đang hoạt động",
     }
@@ -315,6 +324,7 @@ class TrayIcon:
     initial_use_auto : bool     – initial state of auto-detection mode.
     on_change_language : callable(str)   – called with selected language code.
     initial_language : str     – initial language code (EN, KR, DE, ES, FR, JP, CN, PT, VN).
+    on_open_accuracy : callable()        – called when the user opens the Accuracy table.
     """
 
     def __init__(
@@ -330,6 +340,7 @@ class TrayIcon:
         initial_use_auto: bool = True,
         on_change_language: Callable[[str], None] | None = None,
         initial_language: str = "EN",
+        on_open_accuracy: Callable[[], None] | None = None,
     ) -> None:
         self._root   = root
         self._on_pin = on_pin
@@ -341,6 +352,7 @@ class TrayIcon:
         self._use_auto = initial_use_auto
         self._on_change_language = on_change_language
         self._language = initial_language
+        self._on_open_accuracy = on_open_accuracy
         self._detected_currency: str | None = None
 
         # Pin submenu
@@ -430,6 +442,10 @@ class TrayIcon:
             if self._on_toggle_visibility:
                 self._root.after(0, lambda: self._on_toggle_visibility(self._visible))
 
+        def _open_accuracy(icon, item):
+            if self._on_open_accuracy:
+                self._root.after(0, self._on_open_accuracy)
+
         menu = pystray.Menu(
             pystray.MenuItem("EcoTracker", None, enabled=False),
             pystray.Menu.SEPARATOR,
@@ -441,6 +457,7 @@ class TrayIcon:
             pystray.MenuItem(lambda item: self._get_text("pin_to_corner"), pin_submenu),
             pystray.MenuItem(lambda item: self._get_text("currency"), currency_submenu),
             pystray.MenuItem(lambda item: self._get_text("language"), language_submenu),
+            pystray.MenuItem(lambda item: self._get_text("accuracy"), _open_accuracy),
             pystray.Menu.SEPARATOR,
             pystray.MenuItem(lambda item: self._get_text("quit"), self._quit),
         )

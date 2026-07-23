@@ -8,12 +8,12 @@ Run with:
     python  main.py        (with console – useful for debugging)
 """
 
-import sys
 import threading
 import tkinter as tk
 
 from tracker.engine import Engine
 from tracker.geo import GeoDetector
+from ui.accuracy_window import AccuracyWindow
 from ui.overlay import Overlay
 from ui.tray import TrayIcon
 
@@ -29,6 +29,7 @@ def main() -> None:
 
     # ── 3. Build the floating overlay ────────────────────────────────────────
     overlay = Overlay(root, engine)    # noqa: F841  (kept alive via root)
+    accuracy_window = AccuracyWindow(root, engine)
 
     def toggle_visibility(visible: bool) -> None:
         if visible:
@@ -45,9 +46,15 @@ def main() -> None:
             engine.currency = engine.detected_currency
             tray.set_currency(engine.detected_currency, True)
 
-    def on_geo_detected(country_code: str, currency_code: str) -> None:
+    def open_accuracy_window() -> None:
+        accuracy_window.show()
+
+    def change_language(lang: str) -> None:
+        accuracy_window.set_language(lang)
+
+    def on_geo_detected(currency_code: str) -> None:
         def _apply():
-            engine.apply_detected_location(country_code, currency_code)
+            engine.apply_detected_location(currency_code)
             if engine.detected_currency:
                 tray.set_detected_currency(engine.detected_currency)
                 if engine.use_auto:
@@ -65,6 +72,9 @@ def main() -> None:
         initial_currency="EUR",
         on_toggle_auto_currency=toggle_auto_currency,
         initial_use_auto=True,
+        on_change_language=change_language,
+        initial_language="EN",
+        on_open_accuracy=open_accuracy_window,
     )
     tray_thread = threading.Thread(target=tray.run, daemon=True, name="tray")
     tray_thread.start()

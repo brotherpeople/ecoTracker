@@ -8,12 +8,12 @@ class GeoDetector:
     Background IP location detector.
     Fetches location data asynchronously using ipapi.co.
     """
-    def __init__(self, callback: Callable[[str, str], None]) -> None:
+    def __init__(self, callback: Callable[[str], None]) -> None:
         """
         Parameters
         ----------
-        callback : Callable[[str, str], None]
-            Called with (country_code, currency_code) when location is detected.
+        callback : Callable[[str], None]
+            Called with (currency_code) when location is detected.
         """
         self._callback = callback
 
@@ -30,10 +30,9 @@ class GeoDetector:
             with urllib.request.urlopen(req, timeout=8) as response:
                 if response.status == 200:
                     data = json.loads(response.read().decode("utf-8"))
-                    country = data.get("country_code")
                     currency = data.get("currency")
-                    if country and currency:
-                        self._callback(country, currency)
+                    if currency:
+                        self._callback(currency)
         except Exception as exc:
             # Fallback if offline or API limits reached
             print(f"[EcoTracker] Geo-IP detection failed: {exc}")
